@@ -1,0 +1,43 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install web assets
+        run: npm install --no-audit --no-fund
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Pod install
+        run: cd ios/App && pod install
+
+      - name: Build unsigned IPA
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath ../../build CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" -quiet
+          mkdir -p ../../Payload
+          cp -r ../../build/Build/Products/Release-iphoneos/App.app ../../Payload/
+          cd ../..
+          zip -qry 鸽管家.ipa Payload
+          ls -lh 鸽管家.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: pigeon-manager-ipa
+          path: 鸽管家.ipa

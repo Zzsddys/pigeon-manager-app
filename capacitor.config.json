@@ -1,0 +1,8 @@
+﻿{
+  "appId": "com.pigeon.manager",
+  "appName": "鸽管家",
+  "webDir": "www",
+  "ios": {
+    "contentMinimum": "index.html"
+  }
+}

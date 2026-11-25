@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="鸽管家" />
+  <meta name="theme-color" content="#f5f5f7" />
+  <title>鸽管家 · 肉鸽养殖管理</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="css/style.css?v=31" />
+</head>
+<body>
+  <!-- 移动端容器 -->
+  <div class="app-shell">
+    <!-- 顶部状态栏占位（适配 iPhone 刘海） -->
+    <div class="status-bar"></div>
+
+    <!-- 顶部导航栏 -->
+    <header class="nav-bar" id="nav-bar">
+      <button class="nav-btn nav-back" id="nav-back" hidden>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        返回
+      </button>
+      <h1 class="nav-title" id="nav-title">鸽管家</h1>
+      <div class="nav-right">
+        <button class="nav-btn nav-bell" id="nav-bell" hidden>
+          🔔<span class="bell-badge" id="nav-bell-badge" hidden>0</span>
+        </button>
+        <button class="nav-btn nav-action" id="nav-action" hidden>添加</button>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="page-content" id="page-content">
+      <!-- 动态渲染 -->
+    </main>
+
+    <!-- 底部 Tab 栏 -->
+    <nav class="tab-bar">
+      <button class="tab-item active" data-tab="home">
+        <div class="tab-icon">🏠</div>
+        <div class="tab-label">首页</div>
+      </button>
+      <button class="tab-item" data-tab="pigeons">
+        <div class="tab-icon">🐦</div>
+        <div class="tab-label">鸽子</div>
+      </button>
+      <button class="tab-item" data-tab="breed">
+        <div class="tab-icon">🥚</div>
+        <div class="tab-label">繁殖</div>
+      </button>
+      <button class="tab-item" data-tab="feeding">
+        <div class="tab-icon">🌽</div>
+        <div class="tab-label">投喂</div>
+      </button>
+      <button class="tab-item" data-tab="stock">
+        <div class="tab-icon">📦</div>
+        <div class="tab-label">库存</div>
+      </button>
+      <button class="tab-item" data-tab="profit">
+        <div class="tab-icon">💰</div>
+        <div class="tab-label">盈利</div>
+      </button>
+    </nav>
+  </div>
+
+  <!-- 通用弹窗 -->
+  <div class="modal-overlay" id="modal" hidden>
+    <div class="modal-sheet" id="modal-sheet">
+      <div class="modal-header">
+        <h3 id="modal-title">标题</h3>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- 脚本 -->
+  <script src="js/storage.js?v=61"></script>
+  <script src="js/seed.js?v=61"></script>
+  <script src="js/utils.js?v=61"></script>
+  <script src="js/feeding.js?v=61"></script>
+  <script src="js/modules/home.js?v=61"></script>
+  <script src="js/modules/pigeons.js?v=61"></script>
+  <script src="js/modules/breed.js?v=61"></script>
+  <script src="js/modules/feeding.js?v=61"></script>
+  <script src="js/modules/stock.js?v=61"></script>
+  <script src="js/modules/profit.js?v=61"></script>
+  <script src="js/notify.js?v=61"></script>
+  <script src="js/cloud.js?v=61"></script>
+  <script src="js/auto.js?v=61"></script>
+  <script src="js/app.js?v=61"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    }
+  </script>
+</body>
+</html>
