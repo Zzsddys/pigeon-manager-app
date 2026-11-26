@@ -1522,35 +1522,51 @@ const HomePage = {
 
     const ph0 = this._pairStatusKey(b);
     const canAbort = ph0 === 'incubating';
+    const pairedOK = b.status === 'paired';
     const lossTotal0 = Utils.pairLossTotal(b);
     const sib0 = this._siblingNest(b);
 
-    const item = (icon, title, sub, act) => `
-      <button class="pair-action" data-act="${act}" style="width:100%;display:flex;align-items:center;gap:12px;background:#fff;border:0;border-bottom:0.5px solid var(--ios-separator);padding:14px 16px;text-align:left;cursor:pointer">
+    const item = (icon, title, sub, act, enabled) => {
+      const on = enabled !== false;
+      return `
+      <button class="pair-action" data-act="${act}" data-on="${on ? 1 : 0}" style="width:100%;display:flex;align-items:center;gap:12px;background:#fff;border:0;border-bottom:0.5px solid var(--ios-separator);padding:14px 16px;text-align:left;cursor:${on ? 'pointer' : 'default'};${on ? '' : 'opacity:0.42'}">
         <span style="font-size:19px;width:24px;text-align:center">${icon}</span>
         <span style="flex:1;min-width:0">
           <span style="display:block;font-size:15px;font-weight:600;color:var(--ios-text)">${title}</span>
           <span style="display:block;font-size:11px;color:var(--ios-gray3);margin-top:2px">${sub}</span>
         </span>
-        <span style="color:var(--ios-gray3);font-size:15px">›</span>
+        <span style="color:var(--ios-gray3);font-size:15px">${on ? '›' : '⏳'}</span>
       </button>`;
+    };
 
-    Utils.openModal('操作', `
+    const phLabel = { paired: '已配对', laying: '产蛋中', incubating: '孵化中', brooding: '带仔', tosell: '待售', empty: '空怀', sold: '已出栏' }[ph0] || '当前阶段';
+
+    Utils.openModal('操作 · ' + phLabel, `
       <div style="margin:-6px 0 8px;border-top:0.5px solid var(--ios-separator);border-radius:12px;overflow:hidden">
-        ${item('🍽', '调整投喂', recipe ? `当前 ${recipe.label} · ${recipe.grams}g/餐` : '该配对已停用', 'feed')}
+        ${item('🍽', '调整投喂', recipe ? `当前 ${recipe.label} · ${recipe.grams}g/餐` : '该配对已停用', 'feed', !!recipe)}
         ${item('🌅', '今日投喂', '查看两餐明细并记录投喂', 'today')}
-        ${item('📖', '配对完整档案', '所有窝次 · 异常 · 投喂 · 时间线', 'breed')}
+        ${item('🥚', '登记下蛋', pairedOK ? '填写下蛋日期和蛋数' : `需阶段：已配对（当前 ${phLabel}）`, 'lay', pairedOK && !b.layDate)}
+        ${item('🔦', '照蛋', ph0 === 'incubating' && !b.candledDate ? '看几枚受精' : (b.candledDate ? `已照蛋 ${Utils.fmtMonthDay(b.candledDate)}` : `需阶段：孵化中（当前 ${phLabel}）`), 'candle', ph0 === 'incubating' && !b.candledDate)}
+        ${item('🐣', '登记出壳', (ph0 === 'incubating' || ph0 === 'laying') ? '填出壳日期和出壳数' : `需阶段：孵化中（当前 ${phLabel}）`, 'hatch', ph0 === 'incubating' || ph0 === 'laying')}
+        ${item('🐥', '登记出雏数', (ph0 === 'brooding' || ph0 === 'incubating' || ph0 === 'tosell') ? '修正成活几只' : `需阶段：孵化后（当前 ${phLabel}）`, 'survive', ph0 === 'brooding' || ph0 === 'incubating' || ph0 === 'tosell')}
+        ${item('📤', '出栏', (ph0 === 'brooding' || ph0 === 'tosell') ? '选 出售 / 留种 / 待定，结算本窝' : `需阶段：带仔 / 待售（当前 ${phLabel}）`, 'sell', ph0 === 'brooding' || ph0 === 'tosell')}
         ${(ph0 === 'brooding' || ph0 === 'tosell') && !sib0 ? item('🥚', '记下一窝下蛋', '连蛋带仔：边带仔边开新窝', 'nextlay') : ''}
         ${sib0 ? item('🪺', '另一窝 · ' + this._phaseMeta(this._pairStatusKey(sib0)).label, '查看 / 操作同对的另一窝', 'sib') : ''}
         ${item('🏠', '设置笼号', b.cageNo ? `当前 ${b.cageNo} 号笼` : '未设置，点此填写', 'cage')}
-        ${canAbort ? item('🚫', '孵化作废', '蛋不要了，算繁殖损失回空怀', 'abort') : ''}
-        ${canAbort ? item('💥', '啄蛋', '蛋被啄坏，算繁殖损失回空怀', 'peck') : ''}
+        ${item('🚫', '孵化作废', canAbort ? '蛋不要了，算繁殖损失回空怀' : `需阶段：孵化中（当前 ${phLabel}）`, 'abort', canAbort)}
+        ${item('💥', '啄蛋', canAbort ? '蛋被啄坏，算繁殖损失回空怀' : `需阶段：孵化中（当前 ${phLabel}）`, 'peck', canAbort)}
+        ${item('✗', '标记失败', (b.status !== 'sold' && b.status !== 'failed') ? '整窝不要了，记损失' : '已出栏 / 已失败的窝不能标', 'fail', b.status !== 'sold' && b.status !== 'failed')}
+        ${item('📖', '配对完整档案', '所有窝次 · 异常 · 投喂 · 时间线', 'breed')}
       </div>
       ${lossTotal0 > 0 ? `<div style="font-size:12px;color:var(--ios-red);padding:0 4px 6px">繁殖损失合计 ${Utils.fmtMoney(lossTotal0)}</div>` : ''}
     `, [{ label: '取消', style: 'btn-secondary' }]);
 
     document.querySelectorAll('.pair-action').forEach(btn => {
       btn.onclick = () => {
+        if (btn.dataset.on === '0') {
+          Utils.toast('当前阶段用不了，看灰色小字说明');
+          return;
+        }
         const act = btn.dataset.act;
         if (act === 'feed') {
           if (!recipe) { Utils.toast('该配对已停用'); return; }
@@ -1594,6 +1610,24 @@ const HomePage = {
         } else if (act === 'sib') {
           Utils.closeModal();
           this.showPairCardDetail(sib0.id);
+        } else if (act === 'lay') {
+          Utils.closeModal();
+          BreedPage.advanceToLay(b.id);
+        } else if (act === 'candle') {
+          Utils.closeModal();
+          BreedPage.openCandle(b.id);
+        } else if (act === 'hatch') {
+          Utils.closeModal();
+          BreedPage.advanceToHatch(b.id);
+        } else if (act === 'survive') {
+          Utils.closeModal();
+          BreedPage.editSurviveCount(b.id);
+        } else if (act === 'sell') {
+          Utils.closeModal();
+          BreedPage.resolveSell(b.id);
+        } else if (act === 'fail') {
+          Utils.closeModal();
+          BreedPage.markFailed(b.id);
         }
       };
     });
